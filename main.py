@@ -21,6 +21,11 @@ def find_post(id):
         if p["id"] == id:
             return p
 
+def find_index(id):
+    for i,p in enumerate(my_post):
+        if p["id"] == id:
+            return i
+
 @app.get("/")
 async def root():
     return {"message":"Hello World!"}
@@ -65,3 +70,27 @@ def get_post(id: int):
                             detail=f"this id {id} is not available")
     return {"data":posty}
 #1:48:12
+
+@app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
+def delete_posts(id: int):
+    index = find_index(id)
+ 
+    if index == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail = f'this id {id} is not available')
+
+    my_post.pop(index)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@app.put("/posts/{id}")
+def update_post(id: int, post: Post):
+    index = find_index(id)
+
+    if index == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail = f'this id {id} is not available')
+    
+    post_dict = post.dict()
+    post_dict["id"] = id
+    my_post[index] = post_dict
+    return {"updated data":post_dict}
